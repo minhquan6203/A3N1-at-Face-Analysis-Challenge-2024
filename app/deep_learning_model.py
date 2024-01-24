@@ -84,6 +84,7 @@ class Face_Analysis:
             with torch.no_grad():
                 logits = self.classify_model(croped_image_name)
                 age = self.age_space[logits['head_age'].argmax(-1)]
+                print(age)
                 race = self.race_space[logits['head_race'].argmax(-1)]
                 masked = self.masked_space[logits['head_masked'].argmax(-1)]
                 skintone = self.skintone_space[logits['head_skintone'].argmax(-1)]

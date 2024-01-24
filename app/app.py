@@ -38,7 +38,6 @@ def index():
                 new_name=f"{filename.split('.')[0]}_{idx}.jpg"
                 cropped_img.save(os.path.join(CROPPED_PATH,new_name))
             crop_img_path=os.path.join(CROPPED_PATH,f"{filename.split('.')[0]}_{0}.jpg")
-            print(crop_img_path)
             extracted_text = model.perform_face_classify([crop_img_path])
         except Exception as e:
             return render_template('error.html', error_message=str(e))
