@@ -1,0 +1,51 @@
+
+data: 
+    images_folder: data/crop_image
+    train_dataset: data/train.csv
+    val_dataset: data/dev.csv
+    test_dataset: data/test.csv
+
+vision_embedding: 
+    type: VIT #ResNet or VIT
+    image_encoder: google/vit-base-patch16-224-in21k
+    freeze: True
+    d_features:  768 #ResNet 2048 VIT base 768
+    d_model:   512
+    dropout: 0.2
+
+attention: 
+    heads: 8
+    d_model: 512
+    d_key: 64
+    d_value: 64
+    d_ff: 2048
+    d_feature: 2048
+    dropout: 0.2
+
+encoder: 
+    d_model: 512
+    layers: 4
+
+model: 
+    type_model: trans #trans or trans_focal or svm or trans_hydra
+    intermediate_dims: 512
+    dropout: 0.2
+
+phase: train
+
+train: 
+    output_dir: checkpoint
+    seed: 12345
+    num_train_epochs: 20
+    patience: 4
+    learning_rate: 1.0e-4
+    weight_decay: 1.0e-4
+    metric_for_best_model: accuracy
+    per_device_train_batch_size: 64
+    per_device_valid_batch_size: 64
+
+infer: 
+    test_dataset: crop_test_info.csv
+    images_folder: crop_test_image
+    batch_size: 64
+
