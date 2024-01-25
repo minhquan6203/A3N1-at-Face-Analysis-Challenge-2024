@@ -12,11 +12,17 @@ config= {
     },
     "vision_embedding": {
         "type": "VIT", #ResNet or VIT
-        "image_encoder": "google/vit-base-patch16-224-in21k",
+        "image_encoder": "google/vit-base-patch16-224", #WinKawaks/vit-small-patch16-224, google/vit-base-patch16-224, google/vit-large-patch16-224
         "freeze": False,
         "d_features":  768, #ResNet 2048, VIT base 768
-        "d_model":   512,
+        "d_model":   512, #small 384, base 512, large 768
         "dropout": 0.2
+    },
+    "svm":{
+        "gamma": 0.1,
+        "degree": 2,
+        "r": 1,
+        "kernel_type": "custom"
     },
     "attention": {
         "heads": 8,
@@ -32,7 +38,7 @@ config= {
         "layers": 4
     },
     "model": {
-        "type_model": "trans",
+        "type_model": "svm",
         "intermediate_dims": 512,
         "dropout": 0.2
     },
@@ -56,23 +62,25 @@ class Face_Analysis:
         self.exist_ok = exist_ok
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         os.makedirs('checkpoint',exist_ok=True) 
-        if not os.path.exists('checkpoint/best.pt'):
-            os.system("curl -L -o 'checkpoint/best.pt' 'https://drive.usercontent.google.com/download?id=1ttBF9wdPK6yqtrl_yiZL-Ly7n0T5wJTF&export=download&authuser=1&confirm=t'")
+        if not os.path.exists('checkpoint/yolo_m_best.pt'):
+            os.system("curl -L -o 'checkpoint/yolo_m_best.pt' 'https://drive.usercontent.google.com/download?id=1ttBF9wdPK6yqtrl_yiZL-Ly7n0T5wJTF&export=download&authuser=1&confirm=t'")
         
-        if not os.path.exists('checkpoint/best_model.pth'):
-            os.system("curl -L -o 'checkpoint/best_model.pth' 'https://drive.usercontent.google.com/download?id=1gA4r3MBvjmr9JXG7R3ACkwVWKeFKQaVS&export=download&authuser=1&confirm=t'")
+        if not os.path.exists('checkpoint/best_model_custom_svm_vit_base.pth'):
+            os.system("curl -L -o 'checkpoint/best_model_custom_svm_vit_base.pth' 'https://drive.usercontent.google.com/download?id=1AeHTS0QkJFNpJOtAhEtliv1YFIRS9L7F&export=download&authuser=1&confirm=t'")
         
-        self.Yolomodel = YOLO('checkpoint/best.pt').to(self.device)
+        self.Yolomodel = YOLO('checkpoint/yolo_m_best.pt', task="detect")
+        self.Yolomodel.to(self.device)
+        self.Yolomodel.predict('app/static/logo.png', save=False, save_crop=False, verbose=False)
+        
         self.classify_model = build_model(config)
         self.classify_model.to(self.device)
-        self.checkpoint = torch.load('checkpoint/best_model.pth',map_location=self.device)
+        self.checkpoint = torch.load('checkpoint/best_model_custom_svm_vit_base.pth',map_location=self.device)
         self.classify_model.load_state_dict(self.checkpoint['model_state_dict'])
         self.age_space, self.race_space, self.masked_space, self.skintone_space, self.emotion_space, self.gender_space=create_ans_space(config)
                   
     def perform_yolo_detection(self, image_path, save=True, save_crop=False):
         try:
-            
-            results = self.Yolomodel(image_path, save=save, save_crop=save_crop,
+            results = self.Yolomodel.predict(image_path, save=save, save_crop=save_crop,
                                 project=self.project, name=self.name, exist_ok=self.exist_ok)
             return results
         except Exception as e:
@@ -84,7 +92,6 @@ class Face_Analysis:
             with torch.no_grad():
                 logits = self.classify_model(croped_image_name)
                 age = self.age_space[logits['head_age'].argmax(-1)]
-                print(age)
                 race = self.race_space[logits['head_race'].argmax(-1)]
                 masked = self.masked_space[logits['head_masked'].argmax(-1)]
                 skintone = self.skintone_space[logits['head_skintone'].argmax(-1)]

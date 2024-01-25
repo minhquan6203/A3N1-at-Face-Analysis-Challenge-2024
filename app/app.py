@@ -4,6 +4,7 @@ from deep_learning_model import Face_Analysis
 import json
 import cv2
 from PIL import Image
+import time
 app = Flask(__name__)
 
 
@@ -22,7 +23,10 @@ def index():
         upload_file.save(save_path)
 
         try:
+            total_start_time = time.time()
+            yolo_start_time = time.time()
             results = model.perform_yolo_detection(image_path=save_path)
+            yolo_end_time = time.time()
             predictions=json.loads(results[0].tojson())
             img = Image.open(save_path).convert("RGB")
             for idx, prediction in enumerate(predictions):
@@ -38,7 +42,18 @@ def index():
                 new_name=f"{filename.split('.')[0]}_{idx}.jpg"
                 cropped_img.save(os.path.join(CROPPED_PATH,new_name))
             crop_img_path=os.path.join(CROPPED_PATH,f"{filename.split('.')[0]}_{0}.jpg")
+            face_start_time = time.time()
             extracted_text = model.perform_face_classify([crop_img_path])
+            face_end_time = time.time()
+            
+            total_end_time = time.time()
+            total_execution_time = total_end_time - total_start_time
+            yolo_execution_time = yolo_end_time - yolo_start_time
+            face_execution_time = face_end_time - face_start_time
+
+            print(f"Thời gian yolov8 thực hiện: {yolo_execution_time} s")
+            print(f"Thời gian face analysis model thực hiện: {face_execution_time} s")
+            print(f"Tổng thời gian thực hiện: {total_execution_time} s")
         except Exception as e:
             return render_template('error.html', error_message=str(e))
         return render_template('index.html', upload=True, uploaded_image=filename, text=extracted_text, croped_image=f"{filename.split('.')[0]}_{0}.jpg")
