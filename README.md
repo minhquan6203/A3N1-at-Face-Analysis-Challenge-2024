@@ -8,7 +8,7 @@ Face analysis is the process of using technology to analyze human facial feature
 
 This repo is one of the pieces of code that helped us achieve the RUNNER UP in final round.
 
-Author:
+Authors:
 - Trong Anh Nguyen (Anhnguyen.0912a@gmail.com)
 - Quan Van Nguyen (21521333@gm.uit.edu.vn)
 - Khoa Dang Nguyen (garuwriters@gmail.com)
