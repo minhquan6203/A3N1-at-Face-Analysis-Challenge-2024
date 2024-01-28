@@ -37,12 +37,6 @@ class Face_Analysis:
         self.name = name
         self.exist_ok = exist_ok
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        os.makedirs('checkpoint',exist_ok=True) 
-        if not os.path.exists('checkpoint/yolo_m_best.pt'):
-            os.system("curl -L -o 'checkpoint/yolo_m_best.pt' 'https://drive.usercontent.google.com/download?id=1ttBF9wdPK6yqtrl_yiZL-Ly7n0T5wJTF&export=download&authuser=1&confirm=t'")
-        
-        if not os.path.exists('checkpoint/best_model_custom_svm_vit_small.pth'):
-            os.system("curl -L -o 'checkpoint/best_model_custom_svm_vit_small.pth' 'https://drive.usercontent.google.com/download?id=1AeHTS0QkJFNpJOtAhEtliv1YFIRS9L7F&export=download&authuser=1&confirm=t'")
         
         self.Yolomodel = YOLO('checkpoint/yolo_m_best.pt', task="detect")
         self.Yolomodel.to(self.device)
