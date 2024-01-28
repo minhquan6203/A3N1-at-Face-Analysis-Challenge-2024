@@ -12,10 +12,10 @@ config= {
     },
     "vision_embedding": {
         "type": "VIT", #ResNet or VIT
-        "image_encoder": "google/vit-base-patch16-224", #WinKawaks/vit-small-patch16-224, google/vit-base-patch16-224, google/vit-large-patch16-224
+        "image_encoder": "WinKawaks/vit-small-patch16-224", #WinKawaks/vit-small-patch16-224, google/vit-base-patch16-224, google/vit-large-patch16-224
         "freeze": False,
-        "d_features":  768, #ResNet 2048, VIT base 768
-        "d_model":   512, #small 384, base 512, large 768
+        "d_features":  384, #ResNet 2048, VIT base 768
+        "d_model":   384, #small 384, base 512, large 768
         "dropout": 0.2
     },
     "svm":{
@@ -24,35 +24,11 @@ config= {
         "r": 1,
         "kernel_type": "custom"
     },
-    "attention": {
-        "heads": 8,
-        "d_model": 512,
-        "d_key": 64,
-        "d_value": 64,
-        "d_ff": 2048,
-        "d_feature": 2048,
-        "dropout": 0.2,
-    },
-    "encoder": {
-        "d_model": 512,
-        "layers": 4
-    },
     "model": {
         "type_model": "svm",
-        "intermediate_dims": 512,
+        "intermediate_dims": 384,
         "dropout": 0.2
-    },
-    "train": {
-        "output_dir": "app/best_model.pth",
-        "seed": 12345,
-        "num_train_epochs": 20,
-        "patience": 4,
-        "learning_rate": 1.0e-4,
-        "weight_decay": 1.0e-4,
-        "metric_for_best_model": "accuracy",
-        "per_device_train_batch_size": 16,
-        "per_device_valid_batch_size": 16,
-    },
+    }
 }
 
 class Face_Analysis:
@@ -65,8 +41,8 @@ class Face_Analysis:
         if not os.path.exists('checkpoint/yolo_m_best.pt'):
             os.system("curl -L -o 'checkpoint/yolo_m_best.pt' 'https://drive.usercontent.google.com/download?id=1ttBF9wdPK6yqtrl_yiZL-Ly7n0T5wJTF&export=download&authuser=1&confirm=t'")
         
-        if not os.path.exists('checkpoint/best_model_custom_svm_vit_base.pth'):
-            os.system("curl -L -o 'checkpoint/best_model_custom_svm_vit_base.pth' 'https://drive.usercontent.google.com/download?id=1AeHTS0QkJFNpJOtAhEtliv1YFIRS9L7F&export=download&authuser=1&confirm=t'")
+        if not os.path.exists('checkpoint/best_model_custom_svm_vit_small.pth'):
+            os.system("curl -L -o 'checkpoint/best_model_custom_svm_vit_small.pth' 'https://drive.usercontent.google.com/download?id=1AeHTS0QkJFNpJOtAhEtliv1YFIRS9L7F&export=download&authuser=1&confirm=t'")
         
         self.Yolomodel = YOLO('checkpoint/yolo_m_best.pt', task="detect")
         self.Yolomodel.to(self.device)
@@ -74,7 +50,7 @@ class Face_Analysis:
         
         self.classify_model = build_model(config)
         self.classify_model.to(self.device)
-        self.checkpoint = torch.load('checkpoint/best_model_custom_svm_vit_base.pth',map_location=self.device)
+        self.checkpoint = torch.load('checkpoint/best_model_custom_svm_vit_small.pth',map_location=self.device)
         self.classify_model.load_state_dict(self.checkpoint['model_state_dict'])
         self.age_space, self.race_space, self.masked_space, self.skintone_space, self.emotion_space, self.gender_space=create_ans_space(config)
                   
